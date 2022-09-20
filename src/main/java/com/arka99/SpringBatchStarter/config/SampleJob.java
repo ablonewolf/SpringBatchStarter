@@ -2,6 +2,7 @@ package com.arka99.SpringBatchStarter.config;
 
 import com.arka99.SpringBatchStarter.listener.FirstJobListener;
 import com.arka99.SpringBatchStarter.listener.FirstStepListener;
+import com.arka99.SpringBatchStarter.models.Student;
 import com.arka99.SpringBatchStarter.models.StudentCSV;
 import com.arka99.SpringBatchStarter.models.StudentXML;
 import com.arka99.SpringBatchStarter.models.StudentsJSON;
@@ -15,6 +16,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -23,11 +25,15 @@ import org.springframework.batch.item.json.JacksonJsonObjectReader;
 import org.springframework.batch.item.json.JsonItemReader;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class SampleJob {
@@ -51,6 +57,15 @@ public class SampleJob {
     private FirstItemWriter firstItemWriter;
     @Autowired
     ResourceLoader resourceLoader;
+
+    @Autowired
+    @Qualifier("datasource")
+    private DataSource datasource;
+    @Autowired
+    @Qualifier("universitydatasource")
+    private DataSource universitydatasource;
+
+
 
     @Bean
     public Job firstJob() {
@@ -102,15 +117,16 @@ public class SampleJob {
 
     private Step firstChunkStep() {
         return stepBuilderFactory.get("First Chunk Step")
-                .<StudentXML,StudentXML>chunk(4)
+                .<Student,Student>chunk(4)
 //                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
-                .reader(staxEventItemReader())
+                .reader(jdbcCursorItemReader())
 //                .processor(firstItemProcessor)
                 .writer(firstItemWriter)
                 .build();
     }
 
+//    CSV Item Reader
     @Bean
     public FlatFileItemReader<StudentCSV> flatFileItemReader() {
 
@@ -156,6 +172,7 @@ public class SampleJob {
         return flatFileItemReader;
     }
 
+//    JSON Item reader
     @Bean
     public JsonItemReader<StudentsJSON> jsonItemReader() {
         JsonItemReader<StudentsJSON> jsonItemReader = new JsonItemReader<>();
@@ -165,6 +182,8 @@ public class SampleJob {
         jsonItemReader.setCurrentItemCount(4);
         return jsonItemReader;
     }
+
+//    XML Item reader
     @Bean
     public StaxEventItemReader<StudentXML> staxEventItemReader() {
         StaxEventItemReader<StudentXML> staxEventItemReader = new StaxEventItemReader<>();
@@ -176,5 +195,18 @@ public class SampleJob {
             }
         });
         return staxEventItemReader;
+    }
+//    Database item reader
+    @Bean
+    public JdbcCursorItemReader<Student> jdbcCursorItemReader() {
+        JdbcCursorItemReader<Student> jdbcCursorItemReader = new JdbcCursorItemReader<>();
+        jdbcCursorItemReader.setDataSource(universitydatasource);
+        jdbcCursorItemReader.setSql("select first_name as firstName, last_name as lastName, email from student");
+        jdbcCursorItemReader.setRowMapper(new BeanPropertyRowMapper<>() {
+            {
+                setMappedClass(Student.class);
+            }
+        });
+        return jdbcCursorItemReader;
     }
 }
