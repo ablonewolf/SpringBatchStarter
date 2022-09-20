@@ -10,12 +10,14 @@ import com.arka99.SpringBatchStarter.processor.FirstItemProcessor;
 import com.arka99.SpringBatchStarter.reader.FirstItemReader;
 import com.arka99.SpringBatchStarter.service.FirstTasklet;
 import com.arka99.SpringBatchStarter.service.SecondTasklet;
+import com.arka99.SpringBatchStarter.service.StudentService;
 import com.arka99.SpringBatchStarter.writer.FirstItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.adapter.ItemReaderAdapter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -64,6 +66,8 @@ public class SampleJob {
     @Autowired
     @Qualifier("universitydatasource")
     private DataSource universitydatasource;
+    @Autowired
+    private StudentService studentService;
 
 
 
@@ -120,7 +124,7 @@ public class SampleJob {
                 .<Student,Student>chunk(4)
 //                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
-                .reader(jdbcCursorItemReader())
+                .reader(itemReaderAdapter())
 //                .processor(firstItemProcessor)
                 .writer(firstItemWriter)
                 .build();
@@ -208,5 +212,12 @@ public class SampleJob {
             }
         });
         return jdbcCursorItemReader;
+    }
+    @Bean
+    public ItemReaderAdapter<Student> itemReaderAdapter(){
+        ItemReaderAdapter<Student> itemReaderAdapter = new ItemReaderAdapter<>();
+        itemReaderAdapter.setTargetObject(studentService);
+        itemReaderAdapter.setTargetMethod("getStudent");
+        return itemReaderAdapter;
     }
 }
