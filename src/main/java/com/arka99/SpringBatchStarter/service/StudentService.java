@@ -42,10 +42,7 @@ public class StudentService {
         RestTemplate restTemplate = new RestTemplate();
         Student[] students = restTemplate.getForObject("http://localhost:8080/api/job/get/students",Student[].class);
         System.out.println(students);
-        for(Student student: students) {
-//            System.out.println(student);
-            studentList.add(student);
-        }
+        studentList.addAll(Arrays.asList(students));
         return studentList;
     }
     public Student getStudent() {

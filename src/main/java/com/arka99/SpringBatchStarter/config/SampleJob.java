@@ -19,23 +19,31 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.adapter.ItemReaderAdapter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.file.FlatFileFooterCallback;
+import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
+import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.batch.item.json.JacksonJsonObjectReader;
-import org.springframework.batch.item.json.JsonItemReader;
+import org.springframework.batch.item.json.*;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Date;
 
 @Configuration
 public class SampleJob {
@@ -124,9 +132,12 @@ public class SampleJob {
                 .<Student,Student>chunk(4)
 //                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
-                .reader(itemReaderAdapter())
+//                .reader(itemReaderAdapter())
+                .reader(jdbcCursorItemReader())
 //                .processor(firstItemProcessor)
-                .writer(firstItemWriter)
+//                .writer(firstItemWriter)
+                .writer(flatFileItemWriter())
+//                .writer(jsonFileItemWriter())
                 .build();
     }
 
@@ -205,7 +216,7 @@ public class SampleJob {
     public JdbcCursorItemReader<Student> jdbcCursorItemReader() {
         JdbcCursorItemReader<Student> jdbcCursorItemReader = new JdbcCursorItemReader<>();
         jdbcCursorItemReader.setDataSource(universitydatasource);
-        jdbcCursorItemReader.setSql("select first_name as firstName, last_name as lastName, email from student");
+        jdbcCursorItemReader.setSql("select id, first_name as firstName, last_name as lastName, email from student");
         jdbcCursorItemReader.setRowMapper(new BeanPropertyRowMapper<>() {
             {
                 setMappedClass(Student.class);
@@ -219,5 +230,41 @@ public class SampleJob {
         itemReaderAdapter.setTargetObject(studentService);
         itemReaderAdapter.setTargetMethod("getStudent");
         return itemReaderAdapter;
+    }
+    @Bean
+    public FlatFileItemWriter<Student> flatFileItemWriter() {
+        FlatFileItemWriter<Student> flatFileItemWriter = new FlatFileItemWriter<>();
+        flatFileItemWriter.setResource(new FileSystemResource("OutputFiles/students.csv"));
+//        Setting the headers for our csv file
+        FlatFileHeaderCallback flatFileHeaderCallback = new FlatFileHeaderCallback() {
+            @Override
+            public void writeHeader(Writer writer) throws IOException {
+                writer.write("Id,First Name,Last Name,Email");
+            }
+        };
+        flatFileItemWriter.setHeaderCallback(flatFileHeaderCallback);
+//        Setting the line aggregator to write all lines
+        DelimitedLineAggregator<Student> lineAggregator = new DelimitedLineAggregator<>();
+        BeanWrapperFieldExtractor<Student> fieldExtractor = new BeanWrapperFieldExtractor<>();
+        fieldExtractor.setNames(new String[] {"id","firstName","lastName","email"});
+        lineAggregator.setFieldExtractor(fieldExtractor);
+//        Adding a footer for our csv file
+        FlatFileFooterCallback footerCallback = new FlatFileFooterCallback() {
+            @Override
+            public void writeFooter(Writer writer) throws IOException {
+                writer.write("Created @ " + new Date());
+            }
+        };
+        flatFileItemWriter.setLineAggregator(lineAggregator);
+        flatFileItemWriter.setFooterCallback(footerCallback);
+        return flatFileItemWriter;
+    }
+
+    @Bean
+    public JsonFileItemWriter<Student> jsonFileItemWriter() {
+        Resource resource = new FileSystemResource("OutputFiles/students.json");
+        JsonObjectMarshaller<Student> objectMarshaller = new JacksonJsonObjectMarshaller<>();
+        JsonFileItemWriter<Student> jsonFileItemWriter = new JsonFileItemWriter<>(resource,objectMarshaller);
+        return jsonFileItemWriter;
     }
 }
