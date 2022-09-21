@@ -1,12 +1,12 @@
 [
- {"id":1,"firstName":"Arka","lastName":"Bhuiyan","email":"arka.bhuiyan@bjitgroup.com"},
- {"id":2,"firstName":"Farhan","lastName":"Zaman","email":"farhan.zaman@bjitgroup.com"},
- {"id":3,"firstName":"Nipa","lastName":"Howladar","email":"nipa.howladar@bjitgroup.com"},
- {"id":4,"firstName":"Akif","lastName":"Azwad","email":"akif.azwad@bjitgroup.com"},
- {"id":5,"firstName":"Riazul","lastName":"Rana","email":"riazul.rana@bjitgroup.com"},
- {"id":6,"firstName":"Zareen","lastName":"Zia","email":"zareen.zia@bjitgroup.com"},
- {"id":7,"firstName":"Faiaz","lastName":"Mursalin","email":"faiaz.mursalin@bjitgroup.com"},
- {"id":8,"firstName":"Iftekhar","lastName":"Alam","email":"iftekhar.alam@bjitgroup.com"},
- {"id":9,"firstName":"Saif","lastName":"Shohel","email":"saif.shohel@bjitgroup.com"},
- {"id":10,"firstName":"Somoy","lastName":"Subandhu","email":"somoy.subandhu@bjitgroup.com"}
+ {"id":1,"email":"arka.bhuiyan@bjitgroup.com","first_name":"Arka","last_name":"Bhuiyan"},
+ {"id":2,"email":"farhan.zaman@bjitgroup.com","first_name":"Farhan","last_name":"Zaman"},
+ {"id":3,"email":"nipa.howladar@bjitgroup.com","first_name":"Nipa","last_name":"Howladar"},
+ {"id":4,"email":"akif.azwad@bjitgroup.com","first_name":"Akif","last_name":"Azwad"},
+ {"id":5,"email":"riazul.rana@bjitgroup.com","first_name":"Riazul","last_name":"Rana"},
+ {"id":6,"email":"zareen.zia@bjitgroup.com","first_name":"Zareen","last_name":"Zia"},
+ {"id":7,"email":"faiaz.mursalin@bjitgroup.com","first_name":"Faiaz","last_name":"Mursalin"},
+ {"id":8,"email":"iftekhar.alam@bjitgroup.com","first_name":"Iftekhar","last_name":"Alam"},
+ {"id":9,"email":"saif.shohel@bjitgroup.com","first_name":"Saif","last_name":"Shohel"},
+ {"id":10,"email":"somoy.subandhu@bjitgroup.com","first_name":"Somoy","last_name":"Subandhu"}
 ]

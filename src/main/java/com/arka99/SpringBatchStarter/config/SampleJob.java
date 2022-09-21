@@ -18,6 +18,8 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.adapter.ItemReaderAdapter;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileFooterCallback;
 import org.springframework.batch.item.file.FlatFileHeaderCallback;
@@ -30,6 +32,7 @@ import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.json.*;
 import org.springframework.batch.item.xml.StaxEventItemReader;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -129,15 +132,17 @@ public class SampleJob {
 
     private Step firstChunkStep() {
         return stepBuilderFactory.get("First Chunk Step")
-                .<Student,Student>chunk(4)
-//                .reader(flatFileItemReader())
+                .<StudentCSV,Student>chunk(4)
+                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
 //                .reader(itemReaderAdapter())
-                .reader(jdbcCursorItemReader())
+//                .reader(jdbcCursorItemReader())
 //                .processor(firstItemProcessor)
 //                .writer(firstItemWriter)
-                .writer(flatFileItemWriter())
+//                .writer(flatFileItemWriter())
 //                .writer(jsonFileItemWriter())
+//                .writer(staxEventItemWriter())
+                .writer(jdbcBatchItemWriter())
                 .build();
     }
 
@@ -261,10 +266,32 @@ public class SampleJob {
     }
 
     @Bean
-    public JsonFileItemWriter<Student> jsonFileItemWriter() {
+    public JsonFileItemWriter<StudentsJSON> jsonFileItemWriter() {
         Resource resource = new FileSystemResource("OutputFiles/students.json");
-        JsonObjectMarshaller<Student> objectMarshaller = new JacksonJsonObjectMarshaller<>();
-        JsonFileItemWriter<Student> jsonFileItemWriter = new JsonFileItemWriter<>(resource,objectMarshaller);
+        JsonObjectMarshaller<StudentsJSON> objectMarshaller = new JacksonJsonObjectMarshaller<>();
+        JsonFileItemWriter<StudentsJSON> jsonFileItemWriter = new JsonFileItemWriter<>(resource,objectMarshaller);
         return jsonFileItemWriter;
+    }
+
+    @Bean
+    public StaxEventItemWriter<Student> staxEventItemWriter() {
+        StaxEventItemWriter<Student> staxEventItemWriter = new StaxEventItemWriter<>();
+        staxEventItemWriter.setResource(new FileSystemResource("OutputFiles/students.xml"));
+        staxEventItemWriter.setRootTagName("students");
+        staxEventItemWriter.setMarshaller(new Jaxb2Marshaller() {
+            {
+                setClassesToBeBound(Student.class);
+            }
+        });
+        return staxEventItemWriter;
+    }
+    @Bean
+    public JdbcBatchItemWriter<Student> jdbcBatchItemWriter() {
+        JdbcBatchItemWriter<Student> jdbcBatchItemWriter = new JdbcBatchItemWriter<>();
+        jdbcBatchItemWriter.setDataSource(universitydatasource);
+        jdbcBatchItemWriter.setSql("insert into student(id, first_name, last_name, email)"
+        + "values (:id, :firstName, :lastName, :email)");
+        jdbcBatchItemWriter.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
+        return jdbcBatchItemWriter;
     }
 }
