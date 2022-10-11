@@ -18,6 +18,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.adapter.ItemReaderAdapter;
+import org.springframework.batch.item.adapter.ItemWriterAdapter;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
@@ -132,17 +133,18 @@ public class SampleJob {
 
     private Step firstChunkStep() {
         return stepBuilderFactory.get("First Chunk Step")
-                .<StudentCSV,Student>chunk(4)
-                .reader(flatFileItemReader())
+                .<Student,Student>chunk(4)
+//                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
-//                .reader(itemReaderAdapter())
+                .reader(itemReaderAdapter())
 //                .reader(jdbcCursorItemReader())
 //                .processor(firstItemProcessor)
 //                .writer(firstItemWriter)
 //                .writer(flatFileItemWriter())
 //                .writer(jsonFileItemWriter())
 //                .writer(staxEventItemWriter())
-                .writer(jdbcBatchItemWriter())
+//                .writer(jdbcBatchItemWriter())
+                .writer(itemWriterAdapter())
                 .build();
     }
 
@@ -293,5 +295,14 @@ public class SampleJob {
         + "values (:id, :firstName, :lastName, :email)");
         jdbcBatchItemWriter.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
         return jdbcBatchItemWriter;
+    }
+
+    @Bean
+    public ItemWriterAdapter<Student> itemWriterAdapter() {
+        ItemWriterAdapter<Student> itemWriterAdapter = new ItemWriterAdapter<>();
+        itemWriterAdapter.setTargetObject(studentService);
+        itemWriterAdapter.setTargetMethod("restCallToCreateStudent");
+
+        return itemWriterAdapter;
     }
 }

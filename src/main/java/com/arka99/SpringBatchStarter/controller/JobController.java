@@ -50,4 +50,11 @@ public class JobController {
     public List<Student> getStudents() {
         return studentService.getStudents();
     }
+    @PostMapping("/create/student")
+    public Student createStudent(@RequestBody Student student) {
+        System.out.println("Student created with id : " + student.getId());
+        System.out.println("Student crated with name : " + student.getFirstName() + " " + student.getLastName());
+        studentService.saveStudent(student);
+        return new Student(student.getId(),student.getFirstName(),student.getLastName(),student.getEmail());
+    }
 }

@@ -1,6 +1,7 @@
 package com.arka99.SpringBatchStarter.service;
 
 import com.arka99.SpringBatchStarter.models.Student;
+import com.arka99.SpringBatchStarter.models.StudentCSV;
 import com.arka99.SpringBatchStarter.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +54,10 @@ public class StudentService {
             return studentList.remove(0);
         }
         return null;
+    }
+
+    public Student restCallToCreateStudent(Student student) {
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.postForObject("http://localhost:8080/api/job/create/student",student,Student.class);
     }
 }
