@@ -5,8 +5,7 @@
  {"id":4,"email":"akif.azwad@bjitgroup.com","first_name":"Akif","last_name":"Azwad"},
  {"id":5,"email":"riazul.rana@bjitgroup.com","first_name":"Riazul","last_name":"Rana"},
  {"id":6,"email":"zareen.zia@bjitgroup.com","first_name":"Zareen","last_name":"Zia"},
- {"id":7,"email":"faiaz.mursalin@bjitgroup.com","first_name":"Faiaz","last_name":"Mursalin"},
- {"id":8,"email":"iftekhar.alam@bjitgroup.com","first_name":"Iftekhar","last_name":"Alam"},
- {"id":9,"email":"saif.shohel@bjitgroup.com","first_name":"Saif","last_name":"Shohel"},
+ {"id":8,"email":"saif.sohel@bjitgroup.com","first_name":"Saif","last_name":"Sohel"},
+ {"id":9,"email":"iftekhar.alam@bjitgroup.com","first_name":"Iftekhar","last_name":"Alam"},
  {"id":10,"email":"somoy.subandhu@bjitgroup.com","first_name":"Somoy","last_name":"Subandhu"}
 ]

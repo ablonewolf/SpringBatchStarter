@@ -1,7 +1,6 @@
 package com.arka99.SpringBatchStarter.service;
 
 import com.arka99.SpringBatchStarter.models.Student;
-import com.arka99.SpringBatchStarter.models.StudentCSV;
 import com.arka99.SpringBatchStarter.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

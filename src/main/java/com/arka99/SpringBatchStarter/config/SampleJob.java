@@ -133,18 +133,21 @@ public class SampleJob {
 
     private Step firstChunkStep() {
         return stepBuilderFactory.get("First Chunk Step")
-                .<Student,Student>chunk(4)
-//                .reader(flatFileItemReader())
+                .<StudentCSV,StudentsJSON>chunk(4)
+                .reader(flatFileItemReader())
 //                .reader(jsonItemReader())
-                .reader(itemReaderAdapter())
+//                .reader(itemReaderAdapter())
 //                .reader(jdbcCursorItemReader())
-//                .processor(firstItemProcessor)
+                .processor(firstItemProcessor)
 //                .writer(firstItemWriter)
 //                .writer(flatFileItemWriter())
-//                .writer(jsonFileItemWriter())
+                .writer(jsonFileItemWriter())
 //                .writer(staxEventItemWriter())
 //                .writer(jdbcBatchItemWriter())
-                .writer(itemWriterAdapter())
+//                .writer(itemWriterAdapter())
+                .faultTolerant()
+                .skip(Throwable.class)
+                .skipLimit(Integer.MAX_VALUE)
                 .build();
     }
 
@@ -240,6 +243,7 @@ public class SampleJob {
     }
     @Bean
     public FlatFileItemWriter<Student> flatFileItemWriter() {
+        System.out.println("Inside item writer");
         FlatFileItemWriter<Student> flatFileItemWriter = new FlatFileItemWriter<>();
         flatFileItemWriter.setResource(new FileSystemResource("OutputFiles/students.csv"));
 //        Setting the headers for our csv file
@@ -269,6 +273,7 @@ public class SampleJob {
 
     @Bean
     public JsonFileItemWriter<StudentsJSON> jsonFileItemWriter() {
+        System.out.println("Inside item writer");
         Resource resource = new FileSystemResource("OutputFiles/students.json");
         JsonObjectMarshaller<StudentsJSON> objectMarshaller = new JacksonJsonObjectMarshaller<>();
         JsonFileItemWriter<StudentsJSON> jsonFileItemWriter = new JsonFileItemWriter<>(resource,objectMarshaller);
@@ -277,6 +282,7 @@ public class SampleJob {
 
     @Bean
     public StaxEventItemWriter<Student> staxEventItemWriter() {
+        System.out.println("Inside item writer");
         StaxEventItemWriter<Student> staxEventItemWriter = new StaxEventItemWriter<>();
         staxEventItemWriter.setResource(new FileSystemResource("OutputFiles/students.xml"));
         staxEventItemWriter.setRootTagName("students");
@@ -289,6 +295,7 @@ public class SampleJob {
     }
     @Bean
     public JdbcBatchItemWriter<Student> jdbcBatchItemWriter() {
+        System.out.println("Inside item writer");
         JdbcBatchItemWriter<Student> jdbcBatchItemWriter = new JdbcBatchItemWriter<>();
         jdbcBatchItemWriter.setDataSource(universitydatasource);
         jdbcBatchItemWriter.setSql("insert into student(id, first_name, last_name, email)"
@@ -299,6 +306,7 @@ public class SampleJob {
 
     @Bean
     public ItemWriterAdapter<Student> itemWriterAdapter() {
+        System.out.println("Inside item writer");
         ItemWriterAdapter<Student> itemWriterAdapter = new ItemWriterAdapter<>();
         itemWriterAdapter.setTargetObject(studentService);
         itemWriterAdapter.setTargetMethod("restCallToCreateStudent");
